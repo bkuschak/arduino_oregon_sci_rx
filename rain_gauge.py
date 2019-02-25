@@ -16,6 +16,8 @@ import binascii
 
 FILENAME = "rain_gauge.log"
 ARDUINO_RESET_PIN = "P9_15"
+SKIP_TRIGGER = 10		# Skip logging after this many identical measurements
+SKIP_COUNT = 919		# While skipping, only log one out of every SKIP_COUNT messages
 
 
 # Given an array of data, return the nibble at idx.  Our data is nibble-swapped, so unswap them.
@@ -93,6 +95,12 @@ if ser.isOpen():
 	time.sleep(0.5)
 	GPIO.output(ARDUINO_RESET_PIN, GPIO.HIGH)
 
+	skip = 0
+	skip_trigger = 0
+	code_prev = -1
+	total_prev = -1
+	rate_prev = -1
+
 	# log to file
 	with open(FILENAME, "a+") as f:
 		while True:
@@ -109,9 +117,32 @@ if ser.isOpen():
 					#print "Got properly formatted OSV3 msg", t
 					data = re.sub(r'^OSV3 ', '', line)	
 					data = re.sub(r'\s*$', '', data)
+
 					(ret, code, total, rate) = decode_osv3(data, t)
 					if ret == 0:
-						f.write("%f %d %.3f %.3f\n" % (t, code, total, rate))
+
+						# limit the log growth when things aren't changing
+						if code == code_prev and total == total_prev and rate == rate_prev:
+							skip_trigger = skip_trigger + 1
+
+							# if we've seen enough identical packets, start skipping some
+							if skip_trigger >= SKIP_TRIGGER:
+								skip = skip + 1
+								if skip >= SKIP_COUNT:
+									skip = 0
+						else:
+							skip_trigger = 0
+							skip = 0
+
+						if skip == 0:
+							f.write("%.3f %d %.3f %.3f\n" % (t, code, total, rate))
+							f.flush()
+						else:
+							print "skip"
+
+						code_prev = code
+						total_prev = total
+						rate_prev = rate
 					
 				
 ser.close()
