@@ -17,7 +17,7 @@
 #include <avr/interrupt.h>
 
 #define LED             13      // Port 13 - standard
-#define LED_PULSE_LEN   10000   // in units of loop() iterations
+#define LED_PULSE_LEN   20000   // in units of loop() iterations
 
 class DecodeOOK {
   protected:
@@ -616,7 +616,8 @@ void setup () {
 
   // Set up the data pin as an interrupt source
   DDRD &= ~(1<<PD2);        // Set PD2 as input (Using for interupt INT0)
-  PORTD = 1<<PD2;           // Enable PD2 pull-up resistor
+  //PORTD = 1<<PD2;           // Enable PD2 pull-up resistor  - don't do this
+  PORTD &= ~(1<<PD2);       // Disable PD2 pull-up resistor
   EICRA |= (1 << ISC00);    // set INT0 to trigger on ANY logic change
   EIMSK |= (1 << INT0);     // Turns on INT0
   //sei();                    // turn on interrupts
