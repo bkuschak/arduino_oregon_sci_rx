@@ -5,14 +5,19 @@ Oregon Scientific 433MHz OOK receiver and demodulator for use with the Oregon Sc
 Arduino code originally came from: https://jeelabs.net/projects/cafe/wiki/Decoding_the_Oregon_Scientific_V2_protocol   
 Modified to use [ATMEGA328 Arduino Pro Mini](https://www.digikey.com/product-detail/en/sparkfun-electronics/DEV-11114/1568-1054-ND) and the RF Solutions [QAM-RX10-433](https://www.digikey.com/product-detail/en/rf-solutions/QAM-RX10-433/QAM-RX10-433-ND/) demodulator.
 
-Arduino Pin 2 connects to the 433 MHz RX digital output.  
+QAM-RX10-433 is powered by 5V. 
 
-QAM-RX10-433 is running out of spec: it is powered by the BBB's (measured) 3.40V rail, less than the 3.5V data sheet minimum, but it seems to be running fine.  This might need to be changed.
+Arduino Pin 2 connects to the 433 MHz RX digital output through a resistor divider (R1=10K, R2=20K - the output has low drive strength).
 
 ## Beaglebone
 The Arduino and the demodulator are mounted on a Beaglebone proto cape.  This is connected to a BBB that is already being used for other purposes.  RX/TX connects to BBB UART4.  Reset connects to BBB header pin P9_15 (GPIO_48).
 
 The Python script runs on the BBB and logs the rain guage measurements to a file.
+
+The Arduino can be reflashed by exporting the hex file and copying it to the BBB, and then running:
+```
+./flash_arduino.sh
+```
 
 ![Board photo](photo.jpg?raw=true "Board photo")
 
@@ -26,7 +31,7 @@ CRES 5618EA010060F1F700E501
 HEZ 04FE3C0040C203  
 ```
 
-Logfile is concise:
+Valid packs are logged.  Rolling code changes only when the battery is replaced.
 ```
 Timestamp, rolling code, rain total (in), rain rate (in/hr):
 1551050812.230 53 29.579 0.000

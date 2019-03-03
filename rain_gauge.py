@@ -14,8 +14,9 @@ import re
 import sys
 import binascii
 
-FILENAME = "rain_gauge.log"
+FILENAME = "rain_gauge.log"	# log file name
 ARDUINO_RESET_PIN = "P9_15"
+UART_PORT = "/dev/ttyO4"
 SKIP_TRIGGER = 10		# Skip logging after this many identical measurements
 SKIP_COUNT = 919		# While skipping, only log one out of every SKIP_COUNT messages
 
@@ -83,7 +84,7 @@ def decode_osv3(datastr, ts):
 #UART.setup("UART4")
  
 # Serial comms
-ser = serial.Serial(port = "/dev/ttyO4", baudrate=115200)
+ser = serial.Serial(port = UART_PORT, baudrate=115200)
 ser.close()
 ser.open()
 if ser.isOpen():
